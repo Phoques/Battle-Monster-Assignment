@@ -60,9 +60,9 @@ public class DamageHandler : MonoBehaviour
     {
         if (playerTurn && enemyActiveShield == false) //Checks if its the players turn, and if the enemy does not have a shield.
         {
+            healthHandler.UpdateEnemyHealth(hitDamage); // Pass in the damage to the enemy
             playerTurn = false; // change player turn to false
             enemyTurn = true; // change enemy turn to true
-            healthHandler.UpdateEnemyHealth(hitDamage); // Pass in the damage to the enemy
         }
         else if( playerTurn && enemyActiveShield == true) // Otherwise if the enemy does have a shield, as shield nullifies all damage, remove the shield, change the turn.
         {
@@ -130,9 +130,6 @@ public class DamageHandler : MonoBehaviour
     {
         if (enemyTurn && activeShield == false) // If it is the enemies turn, and the player does not have a shield
         {
-            //Change the turns
-            enemyTurn = false;
-            playerTurn = true;
             healthHandler.UpdatePlayerHealth(enemyHitDamage); // Pass in the damage to the player
 
             Debug.Log("Player was Hit");
@@ -154,8 +151,6 @@ public class DamageHandler : MonoBehaviour
         if (enemyTurn && activeShield == false)
         {
             healthHandler.UpdatePlayerHealth(enemyBigHitDamage);
-            enemyTurn = false;
-            playerTurn = true;
 
             Debug.Log("Player was Hit BIGTIME");
         }
@@ -175,8 +170,6 @@ public class DamageHandler : MonoBehaviour
         if (enemyTurn)
         {
             healthHandler.UpdateEnemyHeal(enemyHeal);
-            enemyTurn = false;
-            playerTurn = true;
 
             Debug.Log("Enemy Healed!");
         }
@@ -192,8 +185,6 @@ public class DamageHandler : MonoBehaviour
         {
             enemyActiveShield = true;
             enemyShield.SetActive(true);
-            enemyTurn = false;
-            playerTurn = true;
 
             Debug.Log("Enemy has Shielded!");
         }
@@ -201,4 +192,12 @@ public class DamageHandler : MonoBehaviour
     }
 
     #endregion
+
+
+    #region Known Bugs
+
+    //If Player spam clicks any action, and or doesnt wait a few seconds before making their decision the state machine reaction can be bypassed. and enemy can be killed down to nothing in moments. Unsure how to fix would love advice.
+
+    #endregion
+
 }

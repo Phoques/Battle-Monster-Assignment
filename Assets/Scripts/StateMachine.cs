@@ -129,30 +129,31 @@ public class StateMachine : MonoBehaviour
     //State Coroutine
     IEnumerator ConfidentState()
     {
-        
         yield return new WaitForSeconds(2); // Wait for 2 seconds to make it look like the enemy is thinking.
         damageHandler.EnemyBigHit(); // Call the function
+        damageHandler.enemyTurn = false;
+        yield return new WaitForSeconds(1);
+        damageHandler.playerTurn = true;
         yield return null;
-
-        
-
     }
     IEnumerator WaryState()
     {
-
-        
         yield return new WaitForSeconds(2);
         damageHandler.EnemyHit();
+        damageHandler.enemyTurn = false;
+        yield return new WaitForSeconds(1);
+        damageHandler.playerTurn = true;
         yield return null;
-
-        
-
     }
 
     IEnumerator PanickedState()
-    { 
+    {
         yield return new WaitForSeconds(2);
         damageHandler.EnemyHeal();
+        damageHandler.enemyTurn = false;
+        yield return new WaitForSeconds(1);
+        damageHandler.playerTurn = true;
+
         yield return null;
     }
     IEnumerator EnemyDeath() // Upon enemy death, it is rotated to 'lie down' and then the players turn is never triggered back to true, which ends the game.
@@ -176,24 +177,36 @@ public class StateMachine : MonoBehaviour
         if (desperation == 1)
         {
             damageHandler.EnemyBigHit();
+            damageHandler.enemyTurn = false;
+            yield return new WaitForSeconds(1);
+            damageHandler.playerTurn = true;
 
             Debug.Log("random is 1");
         }
         else if (desperation == 2)
         {
             damageHandler.EnemyHit();
+            damageHandler.enemyTurn = false;
+            yield return new WaitForSeconds(1);
+            damageHandler.playerTurn = true;
 
             Debug.Log("random is 2");
         }
         else if (desperation == 3)
         {
             damageHandler.EnemyShield();
+            damageHandler.enemyTurn = false;
+            yield return new WaitForSeconds(1);
+            damageHandler.playerTurn = true;
 
             Debug.Log("random is 3");
         }
         else if (desperation == 4)
         {
             damageHandler.EnemyHeal();
+            damageHandler.enemyTurn = false;
+            yield return new WaitForSeconds(1);
+            damageHandler.playerTurn = true;
 
             Debug.Log("random is 4");
         }
@@ -204,6 +217,12 @@ public class StateMachine : MonoBehaviour
 
     }
 
+
+    #endregion
+
+    #region Known Bugs
+
+    //If Player spam clicks any action, and or doesnt wait a few seconds before making their decision the state machine reaction can be bypassed. and enemy can be killed down to nothing in moments. Unsure how to fix would love advice.
 
     #endregion
 }

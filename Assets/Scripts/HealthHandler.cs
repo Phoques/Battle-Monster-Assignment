@@ -106,5 +106,9 @@ public class HealthHandler : MonoBehaviour
     }
     #endregion
 
+    #region Known Bugs
 
+    //If Player spam clicks any action, and or doesnt wait a few seconds before making their decision the state machine reaction can be bypassed. and enemy can be killed down to nothing in moments. Unsure how to fix would love advice.
+
+    #endregion
 }
