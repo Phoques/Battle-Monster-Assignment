@@ -11,6 +11,7 @@ public class StateMachine : MonoBehaviour
     #endregion
 
     #region Enum
+    //State variable, and enum states for state machine.
     State state;
     public enum State
     {
@@ -34,32 +35,12 @@ public class StateMachine : MonoBehaviour
         // This function is a switch statement for the statemachine
         EnemyHealthCheck();
 
-        switch (state)
+        if (damageHandler.enemyTurn == true)
         {
-            case State.Confident:
-                damageHandler.EnemyBigHit();
-                break;
-
-            case State.Wary:
-                damageHandler.EnemyHit();
-                break;
-
-            case State.Panicked:
-                damageHandler.EnemyHeal();
-                break;
-
-            case State.Desperate:
-                //damageHandler.EnemyShield();
-                damageHandler.EnemyHit();
-                break;
-            
-            case State.Dead:
-                damageHandler.EnemyDeath();
-                break;
-
-            default:
-                break;
+            ChangeState();
         }
+
+
     }
     #endregion
 
@@ -93,5 +74,136 @@ public class StateMachine : MonoBehaviour
             Debug.Log("Enemy is Dead");
         }
     }
+
+    //This function takes a switch case and then runs the coroutines for each state.
+    private void ChangeState()
+    {
+        switch (state)
+        {
+            case State.Confident:
+                if (damageHandler.enemyTurn == true)
+                {
+                    StartCoroutine(ConfidentState());
+                }
+                break;
+
+            case State.Wary:
+                if (damageHandler.enemyTurn == true)
+                {
+                    StartCoroutine(WaryState());
+                }
+                break;
+
+            case State.Panicked:
+                if (damageHandler.enemyTurn == true)
+                {
+                    StartCoroutine(PanickedState());
+                }
+                break;
+
+            case State.Desperate:
+                if (damageHandler.enemyTurn == true)
+                {
+                    StartCoroutine(DesperateState());
+                }
+                break;
+
+            case State.Dead:
+                if (damageHandler.enemyTurn == true)
+                {
+                    StartCoroutine(EnemyDeath());
+                }
+                break;
+
+            default:
+                break;
+        }
+
+
+    }
+
+
+    #endregion
+
+    #region Coroutines
+    //State Coroutine
+    IEnumerator ConfidentState()
+    {
+        
+        yield return new WaitForSeconds(2); // Wait for 2 seconds to make it look like the enemy is thinking.
+        damageHandler.EnemyBigHit(); // Call the function
+        yield return null;
+
+        
+
+    }
+    IEnumerator WaryState()
+    {
+
+        
+        yield return new WaitForSeconds(2);
+        damageHandler.EnemyHit();
+        yield return null;
+
+        
+
+    }
+
+    IEnumerator PanickedState()
+    { 
+        yield return new WaitForSeconds(2);
+        damageHandler.EnemyHeal();
+        yield return null;
+    }
+    IEnumerator EnemyDeath() // Upon enemy death, it is rotated to 'lie down' and then the players turn is never triggered back to true, which ends the game.
+    {
+        damageHandler.enemyTurn = false;
+        yield return new WaitForSeconds(1);
+        damageHandler.enemyDeath.transform.Rotate(0, 0, 90);
+        Debug.Log("Enemy has died!");
+        yield return null;
+    }
+
+
+
+    //For the last state, I wanted the enemy to randomly choose out of its move list.
+    IEnumerator DesperateState()
+    {
+        float desperation = Random.Range(1, 4); // This randomly rolls a number between 1 and 4.
+        yield return new WaitForSeconds(2); // Wait a moment for enemy to 'think'
+
+        //Then actions one of the below functions according to the number rolled.
+        if (desperation == 1)
+        {
+            damageHandler.EnemyBigHit();
+
+            Debug.Log("random is 1");
+        }
+        else if (desperation == 2)
+        {
+            damageHandler.EnemyHit();
+
+            Debug.Log("random is 2");
+        }
+        else if (desperation == 3)
+        {
+            damageHandler.EnemyShield();
+
+            Debug.Log("random is 3");
+        }
+        else if (desperation == 4)
+        {
+            damageHandler.EnemyHeal();
+
+            Debug.Log("random is 4");
+        }
+
+        yield return null;
+
+
+
+    }
+
+
     #endregion
 }

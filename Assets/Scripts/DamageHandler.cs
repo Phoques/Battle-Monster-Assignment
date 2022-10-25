@@ -10,23 +10,23 @@ public class DamageHandler : MonoBehaviour
 
     #region Player Damage & Heal Variables
     // These variables handle damage for the Player
-    public int hitDamage = 30;
+    public int hitDamage = 15;
     public int bigHitDamage = 20;
-    public int heal = 16;
+    public int heal = 15;
     public bool activeShield = false;
-    public bool playerTurn = true;
-    public GameObject playerShield;
+    public bool playerTurn = true; // To check if it is the players turn
+    public GameObject playerShield; // Sprite for player shield
     #endregion
 
     #region Enemy Damage & Heal Variables
     // These variables handle the damage for the Enemy
     public int enemyHitDamage = 10;
-    public int enemyBigHitDamage = 14;
-    public int enemyHeal = 100;
-    public bool enemyTurn = false;
+    public int enemyBigHitDamage = 15;
+    public int enemyHeal = 10;
+    public bool enemyTurn = false; // To check if it is the enemys turn
     public bool enemyActiveShield = false;
-    public GameObject enemyShield;
-    public GameObject enemyDeath;
+    public GameObject enemyShield; // Sprite for enemy shield
+    public GameObject enemyDeath; // Game Object to rotate enemy on death
     #endregion
 
     #region References
@@ -40,15 +40,15 @@ public class DamageHandler : MonoBehaviour
          
         healthHandler = FindObjectOfType<HealthHandler>();
         
-        playerShield.SetActive(false);
-        enemyShield.SetActive(false);
+        playerShield.SetActive(false); // Setting playershield sprite as false on startup.
+        enemyShield.SetActive(false); // Setting enemyshield sprite as false on startup.
 
     }
 
     private void Update()
     {
 
-        healthHandler.LockHealthPlayer();
+        healthHandler.LockHealthPlayer(); // Lock the players health at min/max
     }
 
     #endregion
@@ -58,13 +58,13 @@ public class DamageHandler : MonoBehaviour
     // These Functions govern Player damage, these are attached to the canvas buttons.
     public void PlayerHit()
     {
-        if (playerTurn && enemyActiveShield == false)
+        if (playerTurn && enemyActiveShield == false) //Checks if its the players turn, and if the enemy does not have a shield.
         {
-            playerTurn = false;
-            enemyTurn = true;
-            healthHandler.UpdateEnemyHealth(hitDamage);
+            playerTurn = false; // change player turn to false
+            enemyTurn = true; // change enemy turn to true
+            healthHandler.UpdateEnemyHealth(hitDamage); // Pass in the damage to the enemy
         }
-        else if( playerTurn && enemyActiveShield == true)
+        else if( playerTurn && enemyActiveShield == true) // Otherwise if the enemy does have a shield, as shield nullifies all damage, remove the shield, change the turn.
         {
             enemyShield.SetActive(false);
             enemyActiveShield = false;
@@ -77,9 +77,9 @@ public class DamageHandler : MonoBehaviour
 
     public void PlayerBigHit()
     {
-        if (playerTurn && enemyActiveShield == false)
+        if (playerTurn && enemyActiveShield == false) // As above
         {
-        healthHandler.UpdateEnemyHealth(bigHitDamage);
+        healthHandler.UpdateEnemyHealth(bigHitDamage); 
         playerTurn = false;
         enemyTurn = true;
         }
@@ -93,17 +93,19 @@ public class DamageHandler : MonoBehaviour
             Debug.Log("ENEMY Shield down");
         }
     }
-
-    public void PlayerHeal()
+    //Handles the player healing
+    public void PlayerHeal() 
     {
         if (playerTurn)
         {
-            healthHandler.UpdatePlayerHeal(heal);
+            healthHandler.UpdatePlayerHeal(heal); // heals for the passed through amount.
+            //Changes the turn
             playerTurn = false;
             enemyTurn = true;
         }
         else
         {
+            //else if not the players turn do nothing.
             return;
         }
     }
@@ -126,15 +128,16 @@ public class DamageHandler : MonoBehaviour
     // These functions are automatically handled by the StateMachine Class
     public void EnemyHit()
     {
-        if (enemyTurn && activeShield == false)
+        if (enemyTurn && activeShield == false) // If it is the enemies turn, and the player does not have a shield
         {
+            //Change the turns
             enemyTurn = false;
             playerTurn = true;
-            healthHandler.UpdatePlayerHealth(enemyHitDamage);
-           
-            Debug.Log("Player Hit");
+            healthHandler.UpdatePlayerHealth(enemyHitDamage); // Pass in the damage to the player
+
+            Debug.Log("Player was Hit");
         }
-        else if(enemyTurn && activeShield == true) 
+        else if(enemyTurn && activeShield == true) // Otherwise if the player does have a shield, as shield nullifies all damage, remove the shield, change the turn.
         {
             playerShield.SetActive(false);
             enemyTurn = false;
@@ -146,7 +149,7 @@ public class DamageHandler : MonoBehaviour
     }
 
 
-    public void EnemyBigHit()
+    public void EnemyBigHit() //As above
     {
         if (enemyTurn && activeShield == false)
         {
@@ -167,7 +170,7 @@ public class DamageHandler : MonoBehaviour
         }
     }
 
-    public void EnemyHeal()
+    public void EnemyHeal() // Like the player healer, but for the enemy
     {
         if (enemyTurn)
         {
@@ -183,7 +186,7 @@ public class DamageHandler : MonoBehaviour
         }
     }
 
-    public void EnemyShield()
+    public void EnemyShield() // Like the player shield but for the enemy.
     {
         if (enemyTurn)
         {
@@ -196,17 +199,6 @@ public class DamageHandler : MonoBehaviour
         }
         else { return; }
     }
-
-    public void EnemyDeath()
-    {
-        if (enemyTurn)
-        {
-            enemyDeath.transform.Rotate(0, 0, 90);
-            Debug.Log("Enemy has died!");
-        }
-        else { return; }
-    }
-
 
     #endregion
 }

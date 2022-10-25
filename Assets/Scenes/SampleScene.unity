@@ -175,7 +175,7 @@ MonoBehaviour:
   playerShield: {fileID: 2133655849}
   enemyHitDamage: 10
   enemyBigHitDamage: 15
-  enemyHeal: 1
+  enemyHeal: 10
   enemyTurn: 0
   enemyActiveShield: 0
   enemyShield: {fileID: 5066559902933303087}
