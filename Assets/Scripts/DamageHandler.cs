@@ -58,7 +58,7 @@ public class DamageHandler : MonoBehaviour
     // These Functions govern Player damage, these are attached to the canvas buttons.
     public void PlayerHit()
     {
-        if (playerTurn && enemyActiveShield == false) //Checks if its the players turn, and if the enemy does not have a shield.
+        if (playerTurn == true && enemyActiveShield == false) //Checks if its the players turn, and if the enemy does not have a shield.
         {
             healthHandler.UpdateEnemyHealth(hitDamage); // Pass in the damage to the enemy
             playerTurn = false; // change player turn to false
@@ -73,17 +73,18 @@ public class DamageHandler : MonoBehaviour
 
             Debug.Log("ENEMY Shield down");
         }
+        else if (!playerTurn) { return; }
     }
 
     public void PlayerBigHit()
     {
-        if (playerTurn && enemyActiveShield == false) // As above
+        if (playerTurn == true && enemyActiveShield == false) // As above
         {
         healthHandler.UpdateEnemyHealth(bigHitDamage); 
         playerTurn = false;
         enemyTurn = true;
         }
-        else if (playerTurn && enemyActiveShield == true)
+        else if (playerTurn == true && enemyActiveShield == true)
         {
             enemyShield.SetActive(false);
             enemyActiveShield = false;
@@ -92,11 +93,12 @@ public class DamageHandler : MonoBehaviour
             
             Debug.Log("ENEMY Shield down");
         }
+        else if (!playerTurn) { return; }
     }
     //Handles the player healing
     public void PlayerHeal() 
     {
-        if (playerTurn)
+        if (playerTurn == true)
         {
             healthHandler.UpdatePlayerHeal(heal); // heals for the passed through amount.
             //Changes the turn
@@ -143,6 +145,7 @@ public class DamageHandler : MonoBehaviour
             
             Debug.Log("PLAYER Shield Down!");
         }
+        else { return; }
     }
 
 
@@ -163,6 +166,7 @@ public class DamageHandler : MonoBehaviour
 
             Debug.Log("PLAYER Shield Down!");
         }
+        else { return; }
     }
 
     public void EnemyHeal() // Like the player healer, but for the enemy
@@ -173,10 +177,7 @@ public class DamageHandler : MonoBehaviour
 
             Debug.Log("Enemy Healed!");
         }
-        else
-        {
-            return;
-        }
+        else { return; }
     }
 
     public void EnemyShield() // Like the player shield but for the enemy.

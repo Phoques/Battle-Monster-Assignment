@@ -19,7 +19,8 @@ public class StateMachine : MonoBehaviour
         Wary,
         Panicked,
         Desperate,
-        Dead
+        Dead,
+        Wait
     }
     #endregion
 
@@ -28,19 +29,14 @@ public class StateMachine : MonoBehaviour
     {
         healthHandler = FindObjectOfType<HealthHandler>();
         damageHandler = FindObjectOfType<DamageHandler>();
+        EnemyHealthCheck();
+        ChangeState();
     }
 
     private void Update()
     {
         // This function is a switch statement for the statemachine
-        EnemyHealthCheck();
-
-        if (damageHandler.enemyTurn == true)
-        {
-            ChangeState();
-        }
-
-
+       // EnemyHealthCheck();
     }
     #endregion
 
@@ -48,6 +44,7 @@ public class StateMachine : MonoBehaviour
     //This function checks the enemies health and then changes the state in the state machine.
     public void EnemyHealthCheck()
     {
+
         if (healthHandler.enemyHealth >= 80)
         {
             state = State.Confident;
@@ -63,7 +60,7 @@ public class StateMachine : MonoBehaviour
             state = State.Panicked;
             Debug.Log("Enemy is Panicked");
         }
-        else if (healthHandler.enemyHealth >= 20)
+        else if (healthHandler.enemyHealth >= 1)
         {
             state = State.Desperate;
             Debug.Log("Enemy is Desperate");
@@ -78,41 +75,32 @@ public class StateMachine : MonoBehaviour
     //This function takes a switch case and then runs the coroutines for each state.
     private void ChangeState()
     {
+        Debug.Log(state.ToString());
         switch (state)
         {
             case State.Confident:
-                if (damageHandler.enemyTurn == true)
-                {
                     StartCoroutine(ConfidentState());
-                }
                 break;
 
             case State.Wary:
-                if (damageHandler.enemyTurn == true)
-                {
                     StartCoroutine(WaryState());
-                }
+
                 break;
 
             case State.Panicked:
-                if (damageHandler.enemyTurn == true)
-                {
                     StartCoroutine(PanickedState());
-                }
                 break;
 
             case State.Desperate:
-                if (damageHandler.enemyTurn == true)
-                {
                     StartCoroutine(DesperateState());
-                }
                 break;
 
             case State.Dead:
-                if (damageHandler.enemyTurn == true)
-                {
                     StartCoroutine(EnemyDeath());
-                }
+                break;
+
+            case State.Wait:
+                    StartCoroutine(WaitState());
                 break;
 
             default:
@@ -129,40 +117,83 @@ public class StateMachine : MonoBehaviour
     //State Coroutine
     IEnumerator ConfidentState()
     {
-        yield return new WaitForSeconds(2); // Wait for 2 seconds to make it look like the enemy is thinking.
-        damageHandler.EnemyBigHit(); // Call the function
-        damageHandler.enemyTurn = false;
-        yield return new WaitForSeconds(1);
-        damageHandler.playerTurn = true;
-        yield return null;
+        EnemyHealthCheck();
+        while (state == State.Confident)
+        {
+            if (!damageHandler.enemyTurn)  // Checks if not enemy turn.
+            { 
+                state = State.Wait; //Change state to wait
+                continue; // Continue back up to the top of the while loop
+            }
+
+            yield return new WaitForSeconds(2); // Wait for 2 seconds to make it look like the enemy is thinking.
+            damageHandler.EnemyBigHit(); // Call the function
+            yield return new WaitForSeconds(1);
+            damageHandler.enemyTurn = false;
+            damageHandler.playerTurn = true;
+        }
+        ChangeState();
     }
+    IEnumerator WaitState()
+    {
+        while (state == State.Wait)
+        {
+            if (damageHandler.enemyTurn) // If enemies turn, do health check to change state.
+            {
+                EnemyHealthCheck();
+            }
+            yield return null;
+        }
+        ChangeState();
+    }
+
     IEnumerator WaryState()
     {
-        yield return new WaitForSeconds(2);
-        damageHandler.EnemyHit();
-        damageHandler.enemyTurn = false;
-        yield return new WaitForSeconds(1);
-        damageHandler.playerTurn = true;
-        yield return null;
+        EnemyHealthCheck();
+        while (state == State.Wary)
+        {
+            if (!damageHandler.enemyTurn)
+            {
+                state = State.Wait;
+                continue;
+            }
+
+            yield return new WaitForSeconds(2);
+            damageHandler.EnemyHit();
+            damageHandler.enemyTurn = false;
+            yield return new WaitForSeconds(1);
+            damageHandler.playerTurn = true;
+
+        }
+        ChangeState();
     }
 
     IEnumerator PanickedState()
     {
-        yield return new WaitForSeconds(2);
-        damageHandler.EnemyHeal();
-        damageHandler.enemyTurn = false;
-        yield return new WaitForSeconds(1);
-        damageHandler.playerTurn = true;
+        EnemyHealthCheck();
+        while (state == State.Panicked)
+        {
+            if (!damageHandler.enemyTurn)
+            {
+                state = State.Wait;
+                continue;
+            }
+            yield return new WaitForSeconds(2);
+            damageHandler.EnemyHeal();
+            damageHandler.enemyTurn = false;
+            yield return new WaitForSeconds(1);
+            damageHandler.playerTurn = true;
 
-        yield return null;
+        }
+        ChangeState();
     }
     IEnumerator EnemyDeath() // Upon enemy death, it is rotated to 'lie down' and then the players turn is never triggered back to true, which ends the game.
     {
         damageHandler.enemyTurn = false;
+        damageHandler.playerTurn = false;
         yield return new WaitForSeconds(1);
         damageHandler.enemyDeath.transform.Rotate(0, 0, 90);
         Debug.Log("Enemy has died!");
-        yield return null;
     }
 
 
@@ -170,51 +201,54 @@ public class StateMachine : MonoBehaviour
     //For the last state, I wanted the enemy to randomly choose out of its move list.
     IEnumerator DesperateState()
     {
-        float desperation = Random.Range(1, 4); // This randomly rolls a number between 1 and 4.
-        yield return new WaitForSeconds(2); // Wait a moment for enemy to 'think'
-
-        //Then actions one of the below functions according to the number rolled.
-        if (desperation == 1)
+        EnemyHealthCheck();
+        while (state == State.Desperate)
         {
-            damageHandler.EnemyBigHit();
-            damageHandler.enemyTurn = false;
-            yield return new WaitForSeconds(1);
-            damageHandler.playerTurn = true;
+            if (!damageHandler.enemyTurn)
+            {
+                state = State.Wait;
+                continue;
+            }
+            float desperation = Random.Range(1, 4); // This randomly rolls a number between 1 and 4.
+            yield return new WaitForSeconds(2); // Wait a moment for enemy to 'think'
 
-            Debug.Log("random is 1");
+            //Then actions one of the below functions according to the number rolled.
+            if (desperation == 1)
+            {
+                damageHandler.EnemyBigHit();
+                damageHandler.enemyTurn = false;
+                damageHandler.playerTurn = true;
+
+                Debug.Log("random is 1");
+            }
+            else if (desperation == 2)
+            {
+                damageHandler.EnemyHit();
+                damageHandler.enemyTurn = false;
+                damageHandler.playerTurn = true;
+
+                Debug.Log("random is 2");
+            }
+            else if (desperation == 3)
+            {
+                damageHandler.EnemyShield();
+                damageHandler.enemyTurn = false;
+                damageHandler.playerTurn = true;
+
+                Debug.Log("random is 3");
+            }
+            else if (desperation == 4)
+            {
+                damageHandler.EnemyHeal();
+                damageHandler.enemyTurn = false;
+                damageHandler.playerTurn = true;
+
+                Debug.Log("random is 4");
+            }
+
         }
-        else if (desperation == 2)
-        {
-            damageHandler.EnemyHit();
-            damageHandler.enemyTurn = false;
-            yield return new WaitForSeconds(1);
-            damageHandler.playerTurn = true;
 
-            Debug.Log("random is 2");
-        }
-        else if (desperation == 3)
-        {
-            damageHandler.EnemyShield();
-            damageHandler.enemyTurn = false;
-            yield return new WaitForSeconds(1);
-            damageHandler.playerTurn = true;
-
-            Debug.Log("random is 3");
-        }
-        else if (desperation == 4)
-        {
-            damageHandler.EnemyHeal();
-            damageHandler.enemyTurn = false;
-            yield return new WaitForSeconds(1);
-            damageHandler.playerTurn = true;
-
-            Debug.Log("random is 4");
-        }
-
-        yield return null;
-
-
-
+        ChangeState();
     }
 
 
